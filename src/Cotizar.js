@@ -225,4 +225,3 @@ const e = {
 };
 
 export default Cotizar;
-
