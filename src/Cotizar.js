@@ -1,42 +1,37 @@
 import React, { useState, useEffect } from 'react';
 
-const P = { verde:'#2D6E5E', verdet:'#E8F2EF', malva:'#9B7BAE', malvat:'#F3EEF7', dorado:'#C4973A', doradot:'#FBF5E6', gris:'#8A8A8A', grisOs:'#2D2D2D' };
+const D = { bg:'#0D1117', card:'#161B22', card2:'#1C2333', border:'rgba(255,255,255,0.08)', text:'#E6EDF3', text2:'rgba(255,255,255,0.5)', verde:'#4AA08A', verdeD:'#1A3D35', malva:'#C4A0D4', malvaD:'#2E1F3E', dorado:'#E8BF6A', doradoD:'#3A2A10', rojo:'#F47067' };
 
-const generarHTMLCotizacion = (c) => `
-<!DOCTYPE html><html><head><meta charset="utf-8"/>
-<style>
-  body{font-family:Arial,sans-serif;padding:40px;color:#2D2D2D;max-width:600px;margin:0 auto;}
-  .header{background:linear-gradient(135deg,#2D6E5E,#4AA08A);color:white;padding:28px 32px;border-radius:16px;margin-bottom:28px;}
-  .header h1{margin:0 0 6px;font-size:24px;letter-spacing:1px;}
-  .header p{margin:0;opacity:0.85;font-size:13px;}
-  .info{display:flex;justify-content:space-between;margin-bottom:24px;gap:16px;}
-  .info-box{flex:1;background:#F5F3EE;border-radius:12px;padding:14px 18px;}
-  .info-box label{font-size:11px;color:#8A8A8A;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;}
-  .info-box p{margin:0;font-weight:bold;font-size:15px;}
-  table{width:100%;border-collapse:collapse;margin-bottom:20px;}
-  th{background:#F5F3EE;padding:10px 14px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#8A8A8A;}
-  td{padding:12px 14px;border-bottom:1px solid #F0EDE8;font-size:14px;}
-  .monto{text-align:right;font-weight:bold;color:#2D6E5E;}
-  .total-box{background:linear-gradient(135deg,#2D6E5E,#4AA08A);color:white;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;}
-  .total-box .label{font-size:14px;opacity:0.9;}
-  .total-box .monto{font-size:26px;font-weight:bold;color:white;}
-  .nota{background:#FBF5E6;border-left:4px solid #C4973A;border-radius:8px;padding:12px 16px;margin-top:16px;font-size:13px;color:#6B5020;}
-  .footer{margin-top:32px;text-align:center;font-size:12px;color:#B0A898;}
+const generarHTML = (c) => `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;padding:40px;color:#1A1A2E;background:#FAFAFA;}
+.header{background:linear-gradient(135deg,#1A3D35,#2D6E5E);color:white;padding:28px 32px;border-radius:16px;margin-bottom:24px;}
+.logo{font-size:22px;font-weight:bold;letter-spacing:2px;margin-bottom:4px;}
+.sub{opacity:.7;font-size:12px;}
+.info{display:flex;gap:16px;margin-bottom:24px;}
+.box{flex:1;background:#F0F0F0;border-radius:12px;padding:14px;}
+.box label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;}
+.box p{font-weight:bold;font-size:15px;}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+th{background:#F0F0F0;padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#888;}
+td{padding:12px 14px;border-bottom:1px solid #EEE;font-size:14px;}
+.r{text-align:right;}.bold{font-weight:bold;}
+.total{background:linear-gradient(135deg,#1A3D35,#2D6E5E);color:white;border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;}
+.total-label{font-size:14px;opacity:.9;}.total-num{font-size:26px;font-weight:bold;}
+.nota{background:#FFF8EC;border-left:4px solid #C4973A;border-radius:8px;padding:12px 16px;margin-top:16px;font-size:13px;color:#6B5020;}
+.footer{margin-top:32px;text-align:center;font-size:11px;color:#AAA;letter-spacing:2px;text-transform:uppercase;}
+@media print{body{padding:20px;}}
 </style></head><body>
-<div class="header"><h1>UNA · Cotización</h1><p>vida y empresa</p></div>
+<div class="header"><div class="logo">UNA</div><div class="sub">vida y empresa</div></div>
 <div class="info">
-  <div class="info-box"><label>Cliente</label><p>${c.nombreCliente}</p></div>
-  <div class="info-box"><label>Fecha</label><p>${c.fecha}</p></div>
+  <div class="box"><label>Para</label><p>${c.nombreCliente}</p></div>
+  <div class="box"><label>Fecha</label><p>${c.fecha}</p></div>
 </div>
-<table>
-  <thead><tr><th>Descripción</th><th style="text-align:center">Cant.</th><th style="text-align:right">Precio unit.</th><th style="text-align:right">Subtotal</th></tr></thead>
-  <tbody>
-    ${c.partidas.map(p=>`<tr><td>${p.descripcion}</td><td style="text-align:center">${p.cantidad}</td><td class="monto">$${parseFloat(p.precioUnitario).toLocaleString('es-MX')}</td><td class="monto">$${(parseFloat(p.cantidad)*parseFloat(p.precioUnitario)).toLocaleString('es-MX',{minimumFractionDigits:2})}</td></tr>`).join('')}
-  </tbody>
-</table>
-<div class="total-box"><span class="label">Total</span><span class="monto">$${c.total.toLocaleString('es-MX',{minimumFractionDigits:2})}</span></div>
-${c.notaCotizacion?`<div class="nota">📝 ${c.notaCotizacion}</div>`:''}
-<div class="footer">Generado con UNA · vida y empresa</div>
+<table><thead><tr><th>Descripcion</th><th style="text-align:center">Cant.</th><th class="r">Precio</th><th class="r">Subtotal</th></tr></thead><tbody>
+${c.partidas.map(p=>`<tr><td>${p.descripcion}</td><td style="text-align:center">${p.cantidad}</td><td class="r">$${parseFloat(p.precioUnitario).toLocaleString('es-MX')}</td><td class="r bold" style="color:#2D6E5E">$${(parseFloat(p.cantidad)*parseFloat(p.precioUnitario)).toLocaleString('es-MX',{minimumFractionDigits:2})}</td></tr>`).join('')}
+</tbody></table>
+<div class="total"><span class="total-label">Total</span><span class="total-num">$${c.total.toLocaleString('es-MX',{minimumFractionDigits:2})}</span></div>
+${c.notaCotizacion?`<div class="nota">${c.notaCotizacion}</div>`:''}
+<div class="footer">Generado con UNA</div>
 </body></html>`;
 
 function Cotizar({ onVolver }) {
@@ -59,176 +54,177 @@ function Cotizar({ onVolver }) {
   useEffect(() => { localStorage.setItem('una_conceptos', JSON.stringify(conceptos)); }, [conceptos]);
   useEffect(() => { if(vista==='nueva'){const g=localStorage.getItem('una_clientes');if(g)setClientes(JSON.parse(g));} }, [vista]);
 
-  const agregarPartida = () => setPartidas([...partidas,{descripcion:'',cantidad:1,precioUnitario:''}]);
   const actualizarPartida = (i,campo,valor) => setPartidas(partidas.map((p,idx)=>idx===i?{...p,[campo]:valor}:p));
   const eliminarPartida = (i) => { if(partidas.length>1)setPartidas(partidas.filter((_,idx)=>idx!==i)); };
-  const calcularTotal = (lista) => lista.reduce((a,p)=>a+(parseFloat(p.cantidad)||0)*(parseFloat(p.precioUnitario)||0),0);
-  const totalActual = calcularTotal(partidas);
+  const calcTotal = (lista) => lista.reduce((a,p)=>a+(parseFloat(p.cantidad)||0)*(parseFloat(p.precioUnitario)||0),0);
+  const totalActual = calcTotal(partidas);
 
   const usarConcepto = (c) => { setPartidas([...partidas.filter(p=>p.descripcion),{descripcion:c.nombre,cantidad:1,precioUnitario:c.precio}]); setMostrarConceptos(false); };
   const guardarConcepto = () => { if(!nuevoConcepto||!nuevoPrecio)return; setConceptos([...conceptos,{id:Date.now(),nombre:nuevoConcepto,precio:nuevoPrecio}]); setNuevoConcepto('');setNuevoPrecio('');setMostrarFormConcepto(false); };
-  const eliminarConcepto = (id) => setConceptos(conceptos.filter(c=>c.id!==id));
   const seleccionarCliente = (c) => { setNombreCliente(c.nombre);setTelefonoCliente(c.telefono||'');setMostrarClientes(false); };
 
   const guardar = () => {
     if(!nombreCliente||partidas.every(p=>!p.descripcion))return;
-    const cot={id:editandoId||Date.now(),nombreCliente,telefonoCliente,notaCotizacion,partidas:partidas.filter(p=>p.descripcion),total:calcularTotal(partidas.filter(p=>p.descripcion)),fecha:new Date().toLocaleDateString('es-MX')};
+    const cot={id:editandoId||Date.now(),nombreCliente,telefonoCliente,notaCotizacion,partidas:partidas.filter(p=>p.descripcion),total:calcTotal(partidas.filter(p=>p.descripcion)),fecha:new Date().toLocaleDateString('es-MX')};
     if(editandoId){setCotizaciones(cotizaciones.map(c=>c.id===editandoId?cot:c));setEditandoId(null);}
     else setCotizaciones([cot,...cotizaciones]);
-    resetFormulario(); setVista('historial');
+    reset(); setVista('historial');
   };
 
-  const resetFormulario = () => { setNombreCliente('');setTelefonoCliente('');setNotaCotizacion('');setPartidas([{descripcion:'',cantidad:1,precioUnitario:''}]);setEditandoId(null);setMostrarClientes(false);setMostrarConceptos(false); };
+  const reset = () => { setNombreCliente('');setTelefonoCliente('');setNotaCotizacion('');setPartidas([{descripcion:'',cantidad:1,precioUnitario:''}]);setEditandoId(null);setMostrarClientes(false);setMostrarConceptos(false); };
   const editar = (c) => { setEditandoId(c.id);setNombreCliente(c.nombreCliente);setTelefonoCliente(c.telefonoCliente);setNotaCotizacion(c.notaCotizacion||'');setPartidas(c.partidas);setVista('nueva'); };
   const eliminar = (id) => setCotizaciones(cotizaciones.filter(c=>c.id!==id));
 
-  const abrirWhatsApp = (c) => {
-    const lineas=c.partidas.map(p=>`• ${p.descripcion} (${p.cantidad} x $${parseFloat(p.precioUnitario).toLocaleString('es-MX')}) = $${(parseFloat(p.cantidad)*parseFloat(p.precioUnitario)).toLocaleString('es-MX',{minimumFractionDigits:2})}`);
-    const msg=[`Hola ${c.nombreCliente} 😊`,``,`Te comparto mi cotización del ${c.fecha}:`,``,...lineas,``,`*Total: $${c.total.toLocaleString('es-MX',{minimumFractionDigits:2})}*`,c.notaCotizacion?`\n📝 ${c.notaCotizacion}`:``,``,`Quedamos en contacto 🌿`].join('\n');
+  const enviarWA = (c) => {
+    const lineas=c.partidas.map(p=>`• ${p.descripcion} x${p.cantidad} = $${(parseFloat(p.cantidad)*parseFloat(p.precioUnitario)).toLocaleString('es-MX',{minimumFractionDigits:2})}`);
+    const msg=[`Hola ${c.nombreCliente}`,``,`Cotizacion del ${c.fecha}:`,``,...lineas,``,`*Total: $${c.total.toLocaleString('es-MX',{minimumFractionDigits:2})}*`,c.notaCotizacion?`\n${c.notaCotizacion}`:'',``,`Quedamos en contacto`].join('\n');
     window.open(`https://wa.me/${c.telefonoCliente?'52'+c.telefonoCliente:''}?text=${encodeURIComponent(msg)}`,'_blank');
   };
 
-  const descargarPDF = (c) => {
-    const html = generarHTMLCotizacion(c);
-    const ventana = window.open('','_blank');
-    ventana.document.write(html);
-    ventana.document.close();
-    ventana.focus();
-    setTimeout(() => { ventana.print(); }, 500);
+  const verPDF = (c) => {
+    const v=window.open('','_blank');
+    v.document.write(generarHTML(c));
+    v.document.close();
+    v.focus();
+    setTimeout(()=>v.print(),500);
   };
 
   return (
-    <div style={e.contenedor}>
-      <div style={e.topBar}>
-        <button style={e.volver} onClick={onVolver}>← Volver</button>
-        <h2 style={e.titulo}>💼 Cotizar</h2>
+    <div style={e.page}>
+      <div style={e.header}>
+        <button style={e.back} onClick={onVolver}>←</button>
+        <div><p style={e.headerSub}>Módulo</p><h2 style={e.headerTitle}>Cotizar</h2></div>
+        <span style={e.headerEmoji}>💼</span>
       </div>
-      <div style={{padding:'16px 20px 0'}}>
-        <div style={e.selectorVista}>
-          {[['nueva','➕ Nueva'],['conceptos',`📦 Conceptos (${conceptos.length})`],['historial',`📋 Historial (${cotizaciones.length})`]].map(([v,l])=>(
-            <button key={v} style={vista===v?{...e.vistaBton,background:'linear-gradient(135deg,#2D6E5E,#4AA08A)',color:'white',border:'none',fontWeight:'bold'}:e.vistaBton} onClick={()=>{setVista(v);if(!editandoId&&v!=='nueva')resetFormulario();}}>{l}</button>
+
+      <div style={e.body}>
+        <div style={e.tabs}>
+          {[['nueva','Nueva'],['conceptos',`Conceptos (${conceptos.length})`],['historial',`Historial (${cotizaciones.length})`]].map(([v,l])=>(
+            <button key={v} style={{...e.tab,background:vista===v?'linear-gradient(135deg,#0E2E2A,#3A7D6E)':'transparent',color:vista===v?'white':D.text2,border:vista===v?'none':`1px solid ${D.border}`}} onClick={()=>{setVista(v);if(!editandoId&&v!=='nueva')reset();}}>{l}</button>
           ))}
         </div>
 
-        {/* ── CONCEPTOS ── */}
+        {/* CONCEPTOS */}
         {vista==='conceptos' && (<>
-          <button style={e.botonVerde} onClick={()=>setMostrarFormConcepto(!mostrarFormConcepto)}>+ Guardar nuevo concepto</button>
-          {mostrarFormConcepto && (
-            <div style={e.seccion}>
-              <p style={e.seccionTitulo}>Nuevo concepto frecuente</p>
+          <button style={e.btn} onClick={()=>setMostrarFormConcepto(!mostrarFormConcepto)}>+ Nuevo concepto</button>
+          {mostrarFormConcepto&&(
+            <div style={e.card}>
+              <p style={e.sectionTitle}>Guardar concepto frecuente</p>
               <input style={e.input} placeholder="Nombre (ej: Corte de cabello)" value={nuevoConcepto} onChange={ev=>setNuevoConcepto(ev.target.value)}/>
-              <input style={e.input} placeholder="Precio unitario (ej: 250)" type="number" value={nuevoPrecio} onChange={ev=>setNuevoPrecio(ev.target.value)}/>
-              <div style={e.filaBotones}>
-                <button style={e.botonCancelar} onClick={()=>setMostrarFormConcepto(false)}>Cancelar</button>
-                <button style={e.botonGuardar} onClick={guardarConcepto}>💾 Guardar</button>
+              <input style={e.input} placeholder="Precio unitario" type="number" value={nuevoPrecio} onChange={ev=>setNuevoPrecio(ev.target.value)}/>
+              <div style={{display:'flex',gap:'10px',marginTop:'10px'}}>
+                <button style={e.btnSec} onClick={()=>setMostrarFormConcepto(false)}>Cancelar</button>
+                <button style={e.btn} onClick={guardarConcepto}>Guardar</button>
               </div>
             </div>
           )}
-          {conceptos.length===0&&<div style={e.vacio}><p style={{fontSize:'40px',margin:0}}>📦</p><p style={{fontWeight:'bold'}}>Sin conceptos guardados</p><p style={{fontSize:'13px',color:P.gris}}>Guarda tus servicios frecuentes para cotizar más rápido</p></div>}
+          {conceptos.length===0&&<div style={e.empty}><p style={{fontSize:'40px',margin:'0 0 10px'}}>📦</p><p style={{color:D.text2}}>Agrega tus servicios frecuentes aqui</p></div>}
           {conceptos.map(c=>(
-            <div key={c.id} style={e.tarjeta}>
+            <div key={c.id} style={e.card}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <div><p style={{fontWeight:'bold',fontSize:'15px',margin:0,color:P.grisOs}}>{c.nombre}</p><p style={{color:P.verde,fontWeight:'bold',fontSize:'16px',margin:'4px 0 0'}}>${parseFloat(c.precio).toLocaleString('es-MX')}</p></div>
-                <button style={{...e.botonAcc,backgroundColor:P.malvat,color:P.malva}} onClick={()=>eliminarConcepto(c.id)}>🗑️</button>
+                <div><p style={{fontWeight:'bold',fontSize:'15px',color:D.text,margin:'0 0 4px'}}>{c.nombre}</p><p style={{color:D.verde,fontWeight:'bold',fontSize:'18px',margin:0}}>${parseFloat(c.precio).toLocaleString('es-MX')}</p></div>
+                <button style={{...e.iconBtn,color:D.rojo}} onClick={()=>setConceptos(conceptos.filter(x=>x.id!==c.id))}>✕</button>
               </div>
             </div>
           ))}
         </>)}
 
-        {/* ── NUEVA COTIZACIÓN ── */}
+        {/* NUEVA */}
         {vista==='nueva' && (<>
-          <div style={e.seccion}>
-            <p style={e.seccionTitulo}>👩‍👧 Cliente</p>
-            {clientes.length>0&&<button style={e.botonSelCliente} onClick={()=>setMostrarClientes(!mostrarClientes)}>👥 {mostrarClientes?'Cerrar':'Elegir de Mis Clientes'}</button>}
+          <div style={e.card}>
+            <p style={e.sectionTitle}>Cliente</p>
+            {clientes.length>0&&<button style={e.btnOutline} onClick={()=>setMostrarClientes(!mostrarClientes)}>{mostrarClientes?'Cerrar lista':'Elegir de Mis Clientes'}</button>}
             {mostrarClientes&&(
-              <div style={e.listaClientes}>
+              <div style={{background:D.card2,borderRadius:'14px',marginBottom:'12px',maxHeight:'200px',overflowY:'auto',border:`1px solid ${D.border}`}}>
                 {clientes.map(c=>(
-                  <div key={c.id} style={e.clienteOpcion} onClick={()=>seleccionarCliente(c)}>
-                    <div style={{...e.avatarMini,backgroundColor:P.verde}}>{c.nombre.charAt(0).toUpperCase()}</div>
-                    <div style={{flex:1}}><p style={{fontWeight:'bold',fontSize:'13px',margin:0}}>{c.nombre}</p>{c.telefono&&<p style={{fontSize:'11px',color:P.gris,margin:'2px 0 0'}}>{c.telefono}</p>}</div>
-                    <span style={{fontSize:'11px',color:P.verde,fontWeight:'bold'}}>✓ Elegir</span>
+                  <div key={c.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px 14px',borderBottom:`1px solid ${D.border}`,cursor:'pointer'}} onClick={()=>seleccionarCliente(c)}>
+                    <div style={{width:'32px',height:'32px',borderRadius:'50%',backgroundColor:D.verdeD,color:D.verde,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold',fontSize:'14px',flexShrink:0}}>{c.nombre.charAt(0).toUpperCase()}</div>
+                    <div style={{flex:1}}><p style={{fontWeight:'bold',fontSize:'13px',margin:0,color:D.text}}>{c.nombre}</p>{c.telefono&&<p style={{fontSize:'11px',color:D.text2,margin:'2px 0 0'}}>{c.telefono}</p>}</div>
+                    <span style={{fontSize:'12px',color:D.verde}}>Elegir</span>
                   </div>
                 ))}
               </div>
             )}
             <input style={e.input} placeholder="Nombre del cliente *" value={nombreCliente} onChange={ev=>setNombreCliente(ev.target.value)}/>
-            <input style={{...e.input,marginBottom:0}} placeholder="Teléfono WhatsApp (ej: 5512345678)" type="tel" value={telefonoCliente} onChange={ev=>setTelefonoCliente(ev.target.value)}/>
+            <input style={{...e.input,marginTop:'8px'}} placeholder="Telefono WhatsApp" type="tel" value={telefonoCliente} onChange={ev=>setTelefonoCliente(ev.target.value)}/>
           </div>
 
-          <div style={e.seccion}>
-            <p style={e.seccionTitulo}>📦 Productos o servicios</p>
-            {conceptos.length>0&&<button style={e.botonSelCliente} onClick={()=>setMostrarConceptos(!mostrarConceptos)}>⚡ {mostrarConceptos?'Cerrar':'Agregar concepto frecuente'}</button>}
+          <div style={e.card}>
+            <p style={e.sectionTitle}>Productos o servicios</p>
+            {conceptos.length>0&&<button style={e.btnOutline} onClick={()=>setMostrarConceptos(!mostrarConceptos)}>{mostrarConceptos?'Cerrar':'Agregar concepto guardado'}</button>}
             {mostrarConceptos&&(
-              <div style={e.listaClientes}>
+              <div style={{background:D.card2,borderRadius:'14px',marginBottom:'12px',maxHeight:'160px',overflowY:'auto',border:`1px solid ${D.border}`}}>
                 {conceptos.map(c=>(
-                  <div key={c.id} style={e.clienteOpcion} onClick={()=>usarConcepto(c)}>
-                    <div style={{flex:1}}><p style={{fontWeight:'bold',fontSize:'13px',margin:0}}>{c.nombre}</p></div>
-                    <span style={{color:P.verde,fontWeight:'bold',fontSize:'14px'}}>${parseFloat(c.precio).toLocaleString('es-MX')}</span>
+                  <div key={c.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px 14px',borderBottom:`1px solid ${D.border}`,cursor:'pointer'}} onClick={()=>usarConcepto(c)}>
+                    <p style={{flex:1,fontSize:'13px',color:D.text,margin:0}}>{c.nombre}</p>
+                    <span style={{color:D.verde,fontWeight:'bold'}}>${parseFloat(c.precio).toLocaleString('es-MX')}</span>
                   </div>
                 ))}
               </div>
             )}
-            <div style={e.encGrid}>{['Descripción','Cant.','Precio','Subtotal'].map(h=><p key={h} style={e.encH}>{h}</p>)}</div>
+
+            <div style={{display:'grid',gridTemplateColumns:'2fr 1fr 1.2fr 1fr',gap:'6px',marginBottom:'8px'}}>
+              {['Descripcion','Cant','Precio','Sub'].map(h=><p key={h} style={{fontSize:'10px',color:D.text2,fontWeight:'bold',margin:0,textAlign:'center',textTransform:'uppercase'}}>{h}</p>)}
+            </div>
             {partidas.map((p,i)=>{
               const sub=(parseFloat(p.cantidad)||0)*(parseFloat(p.precioUnitario)||0);
               return (
-                <div key={i} style={e.partidaFila}>
-                  <input style={e.inputPeq} placeholder="Descripción" value={p.descripcion} onChange={ev=>actualizarPartida(i,'descripcion',ev.target.value)}/>
-                  <input style={{...e.inputPeq,textAlign:'center'}} type="number" min="1" value={p.cantidad} onChange={ev=>actualizarPartida(i,'cantidad',ev.target.value)}/>
-                  <input style={{...e.inputPeq,textAlign:'center'}} type="number" placeholder="$0" value={p.precioUnitario} onChange={ev=>actualizarPartida(i,'precioUnitario',ev.target.value)}/>
-                  <div style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
-                    <p style={{fontSize:'13px',fontWeight:'bold',color:P.verde,margin:0}}>${sub.toLocaleString('es-MX',{minimumFractionDigits:2})}</p>
-                    {partidas.length>1&&<button style={{background:'none',border:'none',color:P.gris,cursor:'pointer',fontSize:'11px'}} onClick={()=>eliminarPartida(i)}>✕</button>}
+                <div key={i} style={{display:'grid',gridTemplateColumns:'2fr 1fr 1.2fr 1fr',gap:'6px',marginBottom:'6px',alignItems:'center'}}>
+                  <input style={e.inputSm} placeholder="Descripcion" value={p.descripcion} onChange={ev=>actualizarPartida(i,'descripcion',ev.target.value)}/>
+                  <input style={{...e.inputSm,textAlign:'center'}} type="number" min="1" value={p.cantidad} onChange={ev=>actualizarPartida(i,'cantidad',ev.target.value)}/>
+                  <input style={{...e.inputSm,textAlign:'center'}} type="number" placeholder="$" value={p.precioUnitario} onChange={ev=>actualizarPartida(i,'precioUnitario',ev.target.value)}/>
+                  <div style={{textAlign:'center'}}>
+                    <p style={{fontSize:'12px',fontWeight:'bold',color:D.verde,margin:0}}>${sub.toLocaleString('es-MX',{minimumFractionDigits:0})}</p>
+                    {partidas.length>1&&<button style={{background:'none',border:'none',color:D.text2,cursor:'pointer',fontSize:'11px'}} onClick={()=>eliminarPartida(i)}>✕</button>}
                   </div>
                 </div>
               );
             })}
-            <button style={e.botonLinea} onClick={agregarPartida}>+ Agregar línea</button>
+            <button style={{...e.btnOutline,marginTop:'8px'}} onClick={()=>setPartidas([...partidas,{descripcion:'',cantidad:1,precioUnitario:''}])}>+ Agregar linea</button>
           </div>
 
-          <div style={e.totalBox}>
-            <p style={{fontWeight:'bold',fontSize:'14px',color:P.grisOs,margin:0}}>Total estimado</p>
-            <p style={{fontWeight:'bold',fontSize:'28px',color:P.verde,margin:0}}>${totalActual.toLocaleString('es-MX',{minimumFractionDigits:2})}</p>
+          <div style={{...e.card,display:'flex',justifyContent:'space-between',alignItems:'center',background:'linear-gradient(135deg,#0E2E2A,#1A4A40)'}}>
+            <p style={{color:'rgba(255,255,255,0.7)',fontSize:'14px',margin:0}}>Total estimado</p>
+            <p style={{color:D.verde,fontWeight:'bold',fontSize:'28px',margin:0}}>${totalActual.toLocaleString('es-MX',{minimumFractionDigits:2})}</p>
           </div>
 
-          <div style={{...e.seccion,marginBottom:'12px'}}>
-            <input style={{...e.input,marginBottom:0}} placeholder="📝 Nota (ej: Incluye envío · Válido 15 días)" value={notaCotizacion} onChange={ev=>setNotaCotizacion(ev.target.value)}/>
+          <div style={e.card}>
+            <input style={{...e.input,marginTop:0}} placeholder="Nota (ej: Incluye envio · Valido 15 dias)" value={notaCotizacion} onChange={ev=>setNotaCotizacion(ev.target.value)}/>
           </div>
 
-          <div style={e.filaBotones}>
-            <button style={e.botonCancelar} onClick={()=>{resetFormulario();setVista('historial');}}>Cancelar</button>
-            <button style={{...e.botonGuardar,opacity:nombreCliente?1:0.5}} onClick={guardar}>{editandoId?'💾 Guardar cambios':'💾 Guardar'}</button>
+          <div style={{display:'flex',gap:'10px',marginBottom:'20px'}}>
+            <button style={e.btnSec} onClick={()=>{reset();setVista('historial');}}>Cancelar</button>
+            <button style={{...e.btn,flex:2,opacity:nombreCliente?1:0.4}} onClick={guardar}>{editandoId?'Guardar cambios':'Guardar cotizacion'}</button>
           </div>
         </>)}
 
-        {/* ── HISTORIAL ── */}
+        {/* HISTORIAL */}
         {vista==='historial' && (<>
-          {cotizaciones.length===0&&<div style={e.vacio}><p style={{fontSize:'48px',margin:0}}>💼</p><p style={{fontWeight:'bold'}}>Sin cotizaciones aún</p><p style={{fontSize:'13px',color:P.gris}}>Toca "+ Nueva" para crear la primera</p></div>}
+          {cotizaciones.length===0&&<div style={e.empty}><p style={{fontSize:'48px',margin:'0 0 10px'}}>💼</p><p style={{color:D.text2}}>Sin cotizaciones aun</p></div>}
           {cotizaciones.map(c=>(
-            <div key={c.id} style={e.tarjeta}>
-              <div style={{display:'flex',gap:'12px',alignItems:'center',marginBottom:'12px'}}>
-                <div style={{width:'40px',height:'40px',borderRadius:'12px',backgroundColor:P.verdet,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><span style={{fontSize:'20px'}}>💼</span></div>
-                <div style={{flex:1}}>
-                  <p style={{fontWeight:'bold',fontSize:'15px',margin:0,color:P.grisOs}}>{c.nombreCliente}</p>
-                  <p style={{fontSize:'12px',color:P.gris,margin:'2px 0 0'}}>{c.fecha} · {c.partidas.length} concepto{c.partidas.length!==1?'s':''}</p>
+            <div key={c.id} style={e.card}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'12px'}}>
+                <div>
+                  <p style={{fontWeight:'bold',fontSize:'16px',color:D.text,margin:'0 0 4px'}}>{c.nombreCliente}</p>
+                  <p style={{fontSize:'12px',color:D.text2,margin:0}}>{c.fecha} · {c.partidas.length} concepto{c.partidas.length!==1?'s':''}</p>
                 </div>
-                <p style={{fontWeight:'bold',fontSize:'20px',color:P.verde,margin:0}}>${c.total.toLocaleString('es-MX',{minimumFractionDigits:2})}</p>
+                <p style={{fontWeight:'bold',fontSize:'20px',color:D.verde,margin:0}}>${c.total.toLocaleString('es-MX',{minimumFractionDigits:2})}</p>
               </div>
-              <div style={{borderTop:'1px solid #F5F3EE',borderBottom:'1px solid #F5F3EE',padding:'8px 0',marginBottom:'10px'}}>
+              <div style={{borderTop:`1px solid ${D.border}`,borderBottom:`1px solid ${D.border}`,padding:'10px 0',marginBottom:'12px'}}>
                 {c.partidas.map((p,i)=>(
                   <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'3px 0'}}>
-                    <span style={{flex:2,fontSize:'12px',color:P.grisOs}}>{p.descripcion}</span>
-                    <span style={{flex:1,fontSize:'11px',color:P.gris,textAlign:'center'}}>{p.cantidad} × ${parseFloat(p.precioUnitario).toLocaleString('es-MX')}</span>
-                    <span style={{flex:1,fontSize:'12px',fontWeight:'bold',color:P.verde,textAlign:'right'}}>${(parseFloat(p.cantidad)*parseFloat(p.precioUnitario)).toLocaleString('es-MX',{minimumFractionDigits:2})}</span>
+                    <span style={{flex:2,fontSize:'12px',color:D.text}}>{p.descripcion}</span>
+                    <span style={{flex:1,fontSize:'11px',color:D.text2,textAlign:'center'}}>{p.cantidad} × ${parseFloat(p.precioUnitario).toLocaleString('es-MX')}</span>
+                    <span style={{flex:1,fontSize:'12px',fontWeight:'bold',color:D.verde,textAlign:'right'}}>${(parseFloat(p.cantidad)*parseFloat(p.precioUnitario)).toLocaleString('es-MX',{minimumFractionDigits:2})}</span>
                   </div>
                 ))}
               </div>
-              {c.notaCotizacion&&<p style={{fontSize:'12px',color:P.gris,marginBottom:'10px'}}>📝 {c.notaCotizacion}</p>}
+              {c.notaCotizacion&&<p style={{fontSize:'12px',color:D.text2,marginBottom:'12px'}}>{c.notaCotizacion}</p>}
               <div style={{display:'flex',gap:'8px'}}>
-                <button style={{flex:2,padding:'10px',borderRadius:'12px',backgroundColor:'#25D366',color:'white',border:'none',cursor:'pointer',fontSize:'13px',fontWeight:'bold'}} onClick={()=>abrirWhatsApp(c)}>💬 WhatsApp</button>
-                <button style={{flex:2,padding:'10px',borderRadius:'12px',backgroundColor:P.verdet,color:P.verde,border:'none',cursor:'pointer',fontSize:'13px',fontWeight:'bold'}} onClick={()=>descargarPDF(c)}>📄 PDF</button>
-                <button style={{...e.botonAcc,backgroundColor:P.doradot,color:P.dorado}} onClick={()=>editar(c)}>✏️</button>
-                <button style={{...e.botonAcc,backgroundColor:P.malvat,color:P.malva}} onClick={()=>eliminar(c.id)}>🗑️</button>
+                <button style={{flex:2,padding:'10px',borderRadius:'12px',backgroundColor:'#1A3A22',color:'#25D366',border:'1px solid #25D36644',cursor:'pointer',fontSize:'13px',fontWeight:'bold'}} onClick={()=>enviarWA(c)}>WhatsApp</button>
+                <button style={{flex:2,padding:'10px',borderRadius:'12px',backgroundColor:D.verdeD,color:D.verde,border:`1px solid ${D.verde}44`,cursor:'pointer',fontSize:'13px',fontWeight:'bold'}} onClick={()=>verPDF(c)}>PDF</button>
+                <button style={{...e.iconBtn,border:`1px solid ${D.border}`,borderRadius:'12px',padding:'10px 14px'}} onClick={()=>editar(c)}>✏️</button>
+                <button style={{...e.iconBtn,border:`1px solid ${D.border}`,borderRadius:'12px',padding:'10px 14px',color:D.rojo}} onClick={()=>eliminar(c.id)}>✕</button>
               </div>
             </div>
           ))}
@@ -239,32 +235,24 @@ function Cotizar({ onVolver }) {
 }
 
 const e = {
-  contenedor:{backgroundColor:'#FFFFFF',minHeight:'100vh',fontFamily:'Arial,sans-serif'},
-  topBar:{background:'linear-gradient(135deg,#2D6E5E,#9B7BAE)',padding:'20px 20px 24px',display:'flex',alignItems:'center',gap:'12px'},
-  volver:{background:'rgba(255,255,255,0.25)',border:'none',color:'white',padding:'8px 14px',borderRadius:'20px',cursor:'pointer',fontSize:'13px'},
-  titulo:{color:'white',fontSize:'20px',margin:0,fontWeight:'normal',letterSpacing:'1px'},
-  selectorVista:{display:'flex',gap:'6px',marginBottom:'16px'},
-  vistaBton:{flex:1,padding:'10px 6px',borderRadius:'12px',border:'1.5px solid #EAE7E0',background:'#FAF9F7',cursor:'pointer',fontSize:'12px',textAlign:'center',color:P.gris},
-  seccion:{background:'white',borderRadius:'20px',padding:'16px',marginBottom:'12px',boxShadow:'0 4px 16px rgba(0,0,0,0.07)',border:'1px solid #EAE7E0'},
-  seccionTitulo:{fontWeight:'bold',color:P.grisOs,fontSize:'13px',margin:'0 0 12px'},
-  botonVerde:{width:'100%',padding:'12px',borderRadius:'12px',background:'linear-gradient(135deg,#2D6E5E,#4AA08A)',color:'white',border:'none',cursor:'pointer',fontWeight:'bold',fontSize:'14px',marginBottom:'12px'},
-  botonSelCliente:{width:'100%',padding:'10px',borderRadius:'12px',border:'1.5px solid #2D6E5E',background:'#E8F2EF',color:'#2D6E5E',cursor:'pointer',fontSize:'13px',fontWeight:'bold',marginBottom:'12px'},
-  listaClientes:{background:'#FAF9F7',borderRadius:'12px',border:'1.5px solid #EAE7E0',marginBottom:'12px',maxHeight:'200px',overflowY:'auto'},
-  clienteOpcion:{display:'flex',alignItems:'center',gap:'10px',padding:'10px 14px',borderBottom:'1px solid #EAE7E0',cursor:'pointer'},
-  avatarMini:{width:'32px',height:'32px',borderRadius:'50%',color:'white',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold',fontSize:'14px',flexShrink:0},
-  input:{width:'100%',padding:'12px 14px',borderRadius:'12px',border:'1.5px solid #EAE7E0',fontSize:'14px',marginBottom:'10px',boxSizing:'border-box',backgroundColor:'#FAF9F7',color:P.grisOs},
-  encGrid:{display:'grid',gridTemplateColumns:'2fr 1fr 1.2fr 1.2fr',gap:'4px',marginBottom:'6px'},
-  encH:{fontSize:'10px',color:'#B0A898',fontWeight:'bold',margin:0,textAlign:'center',textTransform:'uppercase',letterSpacing:'0.5px'},
-  partidaFila:{display:'grid',gridTemplateColumns:'2fr 1fr 1.2fr 1.2fr',gap:'4px',marginBottom:'6px',alignItems:'center'},
-  inputPeq:{padding:'9px 6px',borderRadius:'10px',border:'1.5px solid #EAE7E0',fontSize:'12px',width:'100%',boxSizing:'border-box',backgroundColor:'#FAF9F7'},
-  botonLinea:{width:'100%',marginTop:'8px',padding:'10px',borderRadius:'12px',border:'1.5px dashed #2D6E5E',background:'white',color:'#2D6E5E',cursor:'pointer',fontSize:'13px',fontWeight:'bold'},
-  totalBox:{background:'linear-gradient(135deg,#E8F2EF,#FBF5E6)',borderRadius:'20px',padding:'16px 20px',marginBottom:'12px',display:'flex',justifyContent:'space-between',alignItems:'center',border:'1px solid #EAE7E0'},
-  filaBotones:{display:'flex',gap:'10px',marginBottom:'20px'},
-  botonCancelar:{flex:1,padding:'12px',borderRadius:'12px',border:'1.5px solid #EAE7E0',background:'white',cursor:'pointer',fontSize:'14px',color:P.gris},
-  botonGuardar:{flex:2,padding:'12px',borderRadius:'12px',border:'none',background:'linear-gradient(135deg,#2D6E5E,#4AA08A)',color:'white',cursor:'pointer',fontSize:'14px',fontWeight:'bold'},
-  vacio:{textAlign:'center',padding:'40px 20px',color:P.gris},
-  tarjeta:{background:'white',borderRadius:'20px',padding:'16px',marginBottom:'12px',boxShadow:'0 4px 16px rgba(0,0,0,0.07)',border:'1px solid #EAE7E0'},
-  botonAcc:{padding:'10px 14px',borderRadius:'12px',border:'none',cursor:'pointer',fontSize:'13px'},
+  page:{backgroundColor:D.bg,minHeight:'100vh',fontFamily:'Arial,sans-serif'},
+  header:{background:'linear-gradient(135deg,#0E2E2A,#3A7D6E)',padding:'52px 20px 24px',display:'flex',alignItems:'center',gap:'14px'},
+  back:{background:'rgba(255,255,255,0.12)',border:'none',color:'white',width:'36px',height:'36px',borderRadius:'50%',cursor:'pointer',fontSize:'16px',flexShrink:0},
+  headerSub:{color:'rgba(255,255,255,0.6)',fontSize:'11px',margin:0,letterSpacing:'1px',textTransform:'uppercase'},
+  headerTitle:{color:'white',fontSize:'22px',margin:0,fontWeight:'bold'},
+  headerEmoji:{fontSize:'36px',marginLeft:'auto'},
+  body:{padding:'16px'},
+  card:{background:D.card,borderRadius:'20px',padding:'18px',marginBottom:'12px',border:`1px solid ${D.border}`},
+  sectionTitle:{color:D.text,fontWeight:'bold',fontSize:'14px',margin:'0 0 14px'},
+  tabs:{display:'flex',gap:'8px',marginBottom:'14px'},
+  tab:{flex:1,padding:'10px',borderRadius:'12px',cursor:'pointer',fontSize:'12px',textAlign:'center'},
+  btn:{width:'100%',padding:'14px',background:'linear-gradient(135deg,#0E2E2A,#3A7D6E)',color:'white',border:'none',borderRadius:'14px',fontSize:'14px',cursor:'pointer',fontWeight:'bold',marginBottom:'12px'},
+  btnSec:{flex:1,padding:'13px',borderRadius:'14px',border:`1px solid ${D.border}`,background:'transparent',color:D.text2,cursor:'pointer',fontSize:'14px'},
+  btnOutline:{width:'100%',padding:'11px',borderRadius:'12px',border:`1px solid ${D.verde}55`,background:'transparent',color:D.verde,cursor:'pointer',fontSize:'13px',fontWeight:'bold',marginBottom:'12px'},
+  input:{width:'100%',padding:'13px 16px',borderRadius:'14px',border:`1px solid ${D.border}`,fontSize:'14px',marginTop:'0',boxSizing:'border-box',backgroundColor:D.card2,color:D.text},
+  inputSm:{padding:'9px 8px',borderRadius:'10px',border:`1px solid ${D.border}`,fontSize:'12px',width:'100%',boxSizing:'border-box',backgroundColor:D.card2,color:D.text},
+  empty:{textAlign:'center',padding:'48px 20px'},
+  iconBtn:{background:'none',border:'none',cursor:'pointer',color:D.text2,fontSize:'14px',padding:'4px'},
 };
 
 export default Cotizar;

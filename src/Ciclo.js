@@ -1,122 +1,288 @@
 import React, { useState, useEffect } from 'react';
 
-const FASES = [
-  { id:'menstrual',  nombre:'Fase Menstrual',  emoji:'🔴', diasDesde:1,  diasHasta:5,  gradiente:'linear-gradient(135deg,#9B7BAE,#C4A0D4)', colorTexto:'#7A5C8A', colorSuave:'#F3EEF7', energia:'Energía baja — modo introspectivo', descripcion:'Tu cuerpo pide descanso y reflexión. Es el mejor momento para evaluar tu negocio, revisar números y planear con calma.', negocio:['📊 Revisa tus finanzas del mes','📝 Planea las metas de las próximas semanas','📧 Responde mensajes pendientes','🎯 Define tu estrategia de ventas'], bienestar:['🛁 Date un baño relajante','📖 Lee algo que te inspire','😴 Duerme más de lo habitual','🍵 Tés de manzanilla o jengibre'], evitar:'Evita agendar reuniones importantes o lanzamientos.' },
-  { id:'folicular',  nombre:'Fase Folicular',  emoji:'🌱', diasDesde:6,  diasHasta:13, gradiente:'linear-gradient(135deg,#2D6E5E,#4AA08A)', colorTexto:'#2D6E5E', colorSuave:'#E8F2EF', energia:'Energía subiendo — modo creativo', descripcion:'Tu mente está fresca y receptiva. Ideal para aprender cosas nuevas, arrancar proyectos y crear contenido para redes.', negocio:['🎨 Crea contenido para redes sociales','📸 Toma fotos de tus productos','💡 Desarrolla ideas nuevas','📚 Toma un curso o aprende algo nuevo'], bienestar:['🚶‍♀️ Camina o haz ejercicio ligero','🥗 Come verduras y proteínas frescas','✍️ Escribe en tu diario','🌿 Sal a la naturaleza si puedes'], evitar:'No te sobrecomprometas — todavía estás construyendo energía.' },
-  { id:'ovulatoria', nombre:'Fase Ovulatoria', emoji:'☀️', diasDesde:14, diasHasta:17, gradiente:'linear-gradient(135deg,#C4973A,#E8BF6A)', colorTexto:'#A07828', colorSuave:'#FBF5E6', energia:'¡Energía máxima! — modo ventas', descripcion:'Estás en tu punto más alto. Tu comunicación es fluida y carismática. ¡Es tu semana de oro para vender!', negocio:['💰 Haz llamadas de ventas y cotizaciones','📱 Publica videos o lives en redes','🤝 Agenda reuniones importantes','🚀 Lanza productos o promociones nuevas'], bienestar:['💃 Baila o haz ejercicio que disfrutes','👯‍♀️ Sal con amigas o familia','🌺 Usa colores vibrantes','☀️ Toma sol y aire fresco'], evitar:'No descuides el descanso — la energía alta puede hacerte sobrepasar tus límites.' },
-  { id:'lutea',      nombre:'Fase Lútea',      emoji:'🍂', diasDesde:18, diasHasta:28, gradiente:'linear-gradient(135deg,#7A8C5E,#A0B480)', colorTexto:'#5A6C40', colorSuave:'#EEF2E8', energia:'Energía bajando — modo cierre', descripcion:'Tu energía va disminuyendo. Perfecta para terminar pendientes, tareas administrativas y preparar el descanso.', negocio:['🧾 Organiza facturas y registros','📦 Prepara pedidos y entregas','✅ Termina proyectos empezados','🗂️ Ordena tu espacio de trabajo'], bienestar:['🧘‍♀️ Yoga suave o meditación','🍫 Un poco de chocolate amargo está bien','🛌 Acuéstate más temprano','💆‍♀️ Date un masaje si puedes'], evitar:'Evita tomar decisiones grandes o iniciar cosas nuevas.' },
+const D = { bg:'#0D1117', card:'#161B22', card2:'#1C2333', border:'rgba(255,255,255,0.08)', text:'#E6EDF3', text2:'rgba(255,255,255,0.5)', verde:'#4AA08A', verdeD:'#1A3D35', malva:'#C4A0D4', malvaD:'#2E1F3E', dorado:'#E8BF6A', doradoD:'#3A2A10', rojo:'#F47067' };
+
+const CATEGORIAS = [
+  { id:'cumpleanos', label:'Cumpleanos',  ico:'🎂', color:'#C4A0D4' },
+  { id:'pago',       label:'Servicios',  ico:'💡', color:'#E8BF6A' },
+  { id:'tarjeta',    label:'Tarjetas',   ico:'💳', color:'#4AA08A' },
+  { id:'escolar',    label:'Escolar',    ico:'🎒', color:'#7A8C5E' },
+  { id:'salud',      label:'Salud',      ico:'🩺', color:'#4AA08A' },
+  { id:'tramite',    label:'Tramites',   ico:'📋', color:'#7A8A9A' },
+  { id:'auto',       label:'Auto',       ico:'🚗', color:'#7A8C5E' },
+  { id:'fiscal',     label:'SAT',        ico:'🏛️', color:'#E8BF6A' },
+  { id:'bienestar',  label:'Bienestar',  ico:'✨', color:'#C4A0D4' },
+  { id:'belleza',    label:'Belleza',    ico:'💅', color:'#C4A0D4' },
 ];
 
-function Ciclo({ onVolver }) {
-  const [ultimaMenstruacion, setUltimaMenstruacion] = useState(()=>localStorage.getItem('una_ciclo_fecha')||'');
-  const [duracionCiclo, setDuracionCiclo] = useState(()=>parseInt(localStorage.getItem('una_ciclo_duracion'))||28);
-  const [configurado, setConfigurado] = useState(()=>!!localStorage.getItem('una_ciclo_fecha'));
-  const [pestana, setPestana] = useState('hoy');
+const SUGERIDOS = [
+  { titulo:'Papanicolau',             categoria:'salud',    nota:'Revision anual',           repeticion:'anual'    },
+  { titulo:'Mastografia',             categoria:'salud',    nota:'A partir de los 40',       repeticion:'anual'    },
+  { titulo:'Dentista',                categoria:'salud',    nota:'Cada 6 meses',             repeticion:'ninguna'  },
+  { titulo:'Pago de celular',         categoria:'pago',     nota:'',                         repeticion:'mensual'  },
+  { titulo:'Pago de tarjeta',         categoria:'tarjeta',  nota:'Fecha limite de pago',     repeticion:'mensual'  },
+  { titulo:'Declaracion mensual SAT', categoria:'fiscal',   nota:'Vence dia 17 de cada mes', repeticion:'mensual'  },
+  { titulo:'Declaracion anual SAT',   categoria:'fiscal',   nota:'Abril de cada anio',       repeticion:'anual'    },
+  { titulo:'Verificacion vehicular',  categoria:'auto',     nota:'Revisa tu engomado',       repeticion:'anual'    },
+  { titulo:'Cita conmigo',            categoria:'bienestar',nota:'Una hora solo para ti',    repeticion:'mensual'  },
+  { titulo:'Inscripcion escolar',     categoria:'escolar',  nota:'Preinscripciones SEP',     repeticion:'anual'    },
+  { titulo:'Unias',                   categoria:'belleza',  nota:'',                         repeticion:'mensual'  },
+];
 
-  useEffect(()=>{ if(ultimaMenstruacion)localStorage.setItem('una_ciclo_fecha',ultimaMenstruacion); localStorage.setItem('una_ciclo_duracion',duracionCiclo); },[ultimaMenstruacion,duracionCiclo]);
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MESES_C = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const DSEM = ['D','L','M','X','J','V','S'];
 
-  const calcularFase = () => {
-    if(!ultimaMenstruacion) return null;
-    const inicio = new Date(ultimaMenstruacion+'T12:00:00');
-    const diasTrans = Math.round((new Date()-inicio)/(1000*60*60*24));
-    const diaDelCiclo = ((diasTrans%duracionCiclo)+duracionCiclo)%duracionCiclo+1;
-    return { fase:FASES.find(f=>diaDelCiclo>=f.diasDesde&&diaDelCiclo<=f.diasHasta)||FASES[3], diaDelCiclo };
+function Calendario({ onVolver }) {
+  const [eventos, setEventos] = useState(() => { const g=localStorage.getItem('una_eventos'); return g?JSON.parse(g):[]; });
+  const [vista, setVista] = useState('agregar');
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [titulo, setTitulo] = useState('');
+  const [fecha, setFecha] = useState('');
+  const [categoria, setCategoria] = useState('salud');
+  const [nota, setNota] = useState('');
+  const [repeticion, setRepeticion] = useState('ninguna');
+  const [editandoId, setEditandoId] = useState(null);
+  const [filtro, setFiltro] = useState('todos');
+  const [diaSeleccionado, setDiaSeleccionado] = useState(null);
+  const ahora = new Date();
+  const [mesVista, setMesVista] = useState(ahora.getMonth());
+  const [anioVista, setAnioVista] = useState(ahora.getFullYear());
+
+  useEffect(() => { localStorage.setItem('una_eventos', JSON.stringify(eventos)); }, [eventos]);
+
+  const hoy = ahora.toISOString().split('T')[0];
+
+  const fechaEfectiva = (ev, anioForzado, mesForzado) => {
+    const anio = anioForzado || ahora.getFullYear();
+    if (ev.repetirMensual || ev.repeticion === 'mensual') {
+      const dia = ev.fecha.split('-')[2];
+      const mes = String((mesForzado !== undefined ? mesForzado : ahora.getMonth()) + 1).padStart(2,'0');
+      return `${anio}-${mes}-${dia}`;
+    }
+    if (ev.repetirAnual || ev.repeticion === 'anual') {
+      const [,mes,dia] = ev.fecha.split('-');
+      const esteA = `${anio}-${mes}-${dia}`;
+      return esteA >= hoy ? esteA : `${anio+1}-${mes}-${dia}`;
+    }
+    return ev.fecha;
   };
 
-  const resultado = configurado ? calcularFase() : null;
-  const diasRestantes = () => resultado ? resultado.fase.diasHasta - resultado.diaDelCiclo + 1 : null;
-  const proximaFase = () => FASES[(FASES.findIndex(f=>f.id===resultado.fase.id)+1)%FASES.length];
+  const fechaParaMes = (ev, mes, anio) => {
+    const m = String(mes+1).padStart(2,'0');
+    if (ev.repetirMensual || ev.repeticion === 'mensual') {
+      const dia = ev.fecha.split('-')[2];
+      return `${anio}-${m}-${dia}`;
+    }
+    if (ev.repetirAnual || ev.repeticion === 'anual') {
+      const [,em,dia] = ev.fecha.split('-');
+      return em === m ? `${anio}-${m}-${dia}` : null;
+    }
+    const [ea,em,ed] = ev.fecha.split('-');
+    return (parseInt(ea)===anio && parseInt(em)-1===mes) ? ev.fecha : null;
+  };
+
+  const diasRestantes = (ev) => {
+    const fe = new Date(fechaEfectiva(ev)+'T12:00:00');
+    const diff = Math.round((fe - new Date(hoy+'T12:00:00'))/(1000*60*60*24));
+    if ((ev.repetirAnual || ev.repeticion==='anual') && diff < -30) {
+      const fn = new Date(fechaEfectiva(ev, ahora.getFullYear()+1)+'T12:00:00');
+      return Math.round((fn - new Date(hoy+'T12:00:00'))/(1000*60*60*24));
+    }
+    return diff;
+  };
+
+  const getCat = (id) => CATEGORIAS.find(c=>c.id===id) || CATEGORIAS[0];
+  const getRep = (ev) => ev.repeticion==='mensual'||ev.repetirMensual ? 'mensual' : ev.repeticion==='anual'||ev.repetirAnual ? 'anual' : 'ninguna';
+
+  const guardar = () => {
+    if(!titulo||!fecha) return;
+    const ev = { id:editandoId||Date.now(), titulo, fecha, categoria, nota, repeticion, repetirAnual:repeticion==='anual', repetirMensual:repeticion==='mensual', creadoEl:hoy };
+    if(editandoId){ setEventos(eventos.map(e=>e.id===editandoId?ev:e)); setEditandoId(null); }
+    else setEventos([...eventos, ev]);
+    resetFormulario();
+  };
+
+  const reset = () => { setTitulo('');setFecha('');setNota('');setCategoria('salud');setRepeticion('ninguna');setMostrarForm(false);setEditandoId(null); };
+  const resetFormulario = reset;
+  const eliminar = (id) => setEventos(eventos.filter(ev=>ev.id!==id));
+  const editar = (ev) => { setEditandoId(ev.id);setTitulo(ev.titulo);setFecha(ev.fecha);setCategoria(ev.categoria);setNota(ev.nota||'');setRepeticion(getRep(ev));setMostrarForm(true);setVista('agregar'); };
+  const usarSugerido = (s) => { setTitulo(s.titulo);setCategoria(s.categoria);setNota(s.nota);setRepeticion(s.repeticion);setFecha('');setMostrarForm(true);setVista('agregar'); };
+
+  const eventosDelDia = (dia,mes,anio) => eventos.filter(ev => {
+    const f = fechaParaMes(ev,mes,anio);
+    return f === `${anio}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+  });
+
+  const construirMes = (mes,anio) => {
+    const primer=new Date(anio,mes,1).getDay(), dias=new Date(anio,mes+1,0).getDate(), arr=[];
+    for(let i=0;i<primer;i++) arr.push(null);
+    for(let d=1;d<=dias;d++) arr.push(d);
+    return arr;
+  };
+
+  const celdas = construirMes(mesVista, anioVista);
+  const mesAnt = () => { if(mesVista===0){setMesVista(11);setAnioVista(anioVista-1);}else setMesVista(mesVista-1); setDiaSeleccionado(null); };
+  const mesSig = () => { if(mesVista===11){setMesVista(0);setAnioVista(anioVista+1);}else setMesVista(mesVista+1); setDiaSeleccionado(null); };
+
+  const proximos = eventos.filter(ev=>{const d=diasRestantes(ev);return d>=0&&d<=7;}).sort((a,b)=>diasRestantes(a)-diasRestantes(b));
+  const eventosFiltrados = eventos.filter(ev=>filtro==='todos'||ev.categoria===filtro).sort((a,b)=>diasRestantes(a)-diasRestantes(b));
+  const hoyD=ahora.getDate(), hoyM=ahora.getMonth(), hoyA=ahora.getFullYear();
+
+  const etiqueta = (dias) => dias===0?{t:'Hoy',c:D.malva}:dias===1?{t:'Mañana',c:D.dorado}:dias<0?{t:'Vencido',c:D.text2}:{t:`${dias}d`,c:D.verde};
+
+  const repLabel = (ev) => { const r=getRep(ev); return r==='mensual'?'↻ mensual':r==='anual'?'↻ anual':''; };
 
   return (
-    <div style={e.contenedor}>
-      <div style={{ ...e.topBar, background: resultado ? resultado.fase.gradiente : 'linear-gradient(135deg,#7A5C8A,#B48EC4)' }}>
-        <button style={e.volver} onClick={onVolver}>← Volver</button>
-        <h2 style={e.titulo}>🌙 Ciclo y Productividad</h2>
+    <div style={e.page}>
+      <div style={e.header}>
+        <button style={e.back} onClick={onVolver}>←</button>
+        <div><p style={e.headerSub}>Módulo</p><h2 style={e.headerTitle}>Calendario Vital</h2></div>
+        <span style={e.headerEmoji}>📅</span>
       </div>
 
-      <div style={{padding:'20px'}}>
-        {!configurado && (
-          <div style={e.configBox}>
-            <div style={e.configHeader}><span style={{fontSize:'40px'}}>🌙</span><div><p style={e.configTitulo}>Personaliza tus consejos</p><p style={e.configSub}>Solo necesito dos datos</p></div></div>
-            <label style={e.label}>📅 Primer día de tu última menstruación</label>
-            <input style={e.input} type="date" value={ultimaMenstruacion} onChange={ev=>setUltimaMenstruacion(ev.target.value)} />
-            <label style={e.label}>🔄 ¿Cuántos días dura tu ciclo?</label>
-            <div style={e.duracionFila}>
-              {[21,24,26,28,30,32,35].map(d=>(
-                <button key={d} style={{ ...e.durBtn, backgroundColor:duracionCiclo===d?'#7A5C8A':'white', color:duracionCiclo===d?'white':'#8A8A8A', borderColor:duracionCiclo===d?'#7A5C8A':'#EAE7E0' }} onClick={()=>setDuracionCiclo(d)}>{d}</button>
-              ))}
-            </div>
-            <p style={e.hint}>28 días es el promedio más común si no lo sabes con exactitud.</p>
-            <button style={{ ...e.botonGuardar, opacity:ultimaMenstruacion?1:0.5 }} onClick={()=>ultimaMenstruacion&&setConfigurado(true)}>Ver mi fase de hoy ✨</button>
+      <div style={e.body}>
+        {proximos.length>0 && (
+          <div style={{...e.card,borderLeft:`2px solid ${D.dorado}`}}>
+            <p style={{...e.sectionTitle,color:D.dorado}}>Esta semana</p>
+            {proximos.map(ev=>{const cat=getCat(ev.categoria);const d=diasRestantes(ev);return(
+              <div key={ev.id} style={e.alertItem}>
+                <span style={{fontSize:'18px'}}>{cat.ico}</span>
+                <span style={{color:D.text,fontSize:'13px',flex:1}}><strong>{ev.titulo}</strong> — {d===0?'hoy':d===1?'mañana':`en ${d} días`}</span>
+              </div>
+            );})}
           </div>
         )}
 
-        {configurado && resultado && (<>
-          <div style={{ ...e.faseTarjeta, background:resultado.fase.gradiente }}>
-            <div style={e.faseTop}>
-              <div>
-                <p style={e.faseSubtitulo}>Hoy estás en</p>
-                <p style={e.faseNombre}>{resultado.fase.emoji} {resultado.fase.nombre}</p>
-                <p style={e.faseEnergia}>{resultado.fase.energia}</p>
-              </div>
-              <div style={e.faseMetas}>
-                <div style={e.faseMeta}><p style={e.faseMetaNum}>Día {resultado.diaDelCiclo}</p><p style={e.faseMetaLabel}>de tu ciclo</p></div>
-                <div style={e.faseMeta}><p style={e.faseMetaNum}>{diasRestantes()}</p><p style={e.faseMetaLabel}>días más</p></div>
-              </div>
-            </div>
-            <p style={e.faseDescripcion}>{resultado.fase.descripcion}</p>
-            <div style={e.proximaFaseBox}>
-              <p style={e.proximaFaseTexto}>Próxima fase: {proximaFase().emoji} {proximaFase().nombre}</p>
-            </div>
-          </div>
+        <div style={e.tabs}>
+          {[['agregar','Agregar'],['lista','Lista'],['mes','Mes']].map(([v,l])=>(
+            <button key={v} style={{...e.tab,background:vista===v?'linear-gradient(135deg,#3A2A10,#C4973A)':'transparent',color:vista===v?'white':D.text2,border:vista===v?'none':`1px solid ${D.border}`}} onClick={()=>setVista(v)}>{l}</button>
+          ))}
+        </div>
 
-          <div style={e.pestanas}>
-            {[['hoy','💼 Negocio'],['bienestar','🌸 Bienestar'],['ciclo','📊 Mi ciclo']].map(([p,l])=>(
-              <button key={p} style={pestana===p?{...e.pestana,background:resultado.fase.gradiente,color:'white',border:'none',fontWeight:'bold'}:e.pestana} onClick={()=>setPestana(p)}>{l}</button>
+        {/* MES */}
+        {vista==='mes' && (
+          <div style={e.card}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
+              <button style={e.navBtn} onClick={mesAnt}>‹</button>
+              <p style={{color:D.text,fontWeight:'bold',fontSize:'16px',margin:0}}>{MESES[mesVista]} {anioVista}</p>
+              <button style={e.navBtn} onClick={mesSig}>›</button>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',marginBottom:'8px'}}>
+              {DSEM.map(d=><p key={d} style={{textAlign:'center',fontSize:'11px',color:D.text2,fontWeight:'bold',margin:0}}>{d}</p>)}
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px'}}>
+              {celdas.map((dia,i)=>{
+                if(!dia) return <div key={`v-${i}`}/>;
+                const evsDia=eventosDelDia(dia,mesVista,anioVista);
+                const esHoy=dia===hoyD&&mesVista===hoyM&&anioVista===hoyA;
+                const esSel=dia===diaSeleccionado;
+                return (
+                  <div key={dia} style={{borderRadius:'10px',padding:'4px 2px',minHeight:'44px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',background:esSel?'linear-gradient(135deg,#3A2A10,#C4973A)':esHoy?D.doradoD:'transparent',border:esHoy&&!esSel?`1px solid ${D.dorado}`:'1px solid transparent'}} onClick={()=>setDiaSeleccionado(dia===diaSeleccionado?null:dia)}>
+                    <p style={{fontSize:'13px',fontWeight:'bold',margin:'2px 0',color:esSel?'white':esHoy?D.dorado:D.text}}>{dia}</p>
+                    <div style={{display:'flex',gap:'2px'}}>{evsDia.slice(0,3).map((ev,idx)=><span key={idx} style={{width:'5px',height:'5px',borderRadius:'50%',backgroundColor:getCat(ev.categoria).color}}/>)}</div>
+                  </div>
+                );
+              })}
+            </div>
+            {diaSeleccionado && (
+              <div style={{marginTop:'16px',borderTop:`1px solid ${D.border}`,paddingTop:'16px'}}>
+                <p style={{color:D.text,fontWeight:'bold',fontSize:'14px',marginBottom:'10px'}}>{diaSeleccionado} de {MESES_C[mesVista]}</p>
+                {eventosDelDia(diaSeleccionado,mesVista,anioVista).length===0
+                  ? <p style={{color:D.text2,fontSize:'13px',textAlign:'center'}}>Sin eventos</p>
+                  : eventosDelDia(diaSeleccionado,mesVista,anioVista).map(ev=>{
+                      const cat=getCat(ev.categoria);
+                      return (
+                        <div key={ev.id} style={{display:'flex',alignItems:'center',gap:'10px',padding:'10px',borderRadius:'12px',marginBottom:'8px',background:D.card2}}>
+                          <span style={{fontSize:'20px'}}>{cat.ico}</span>
+                          <div style={{flex:1}}>
+                            <p style={{fontSize:'13px',fontWeight:'bold',color:D.text,margin:0}}>{ev.titulo}</p>
+                            {repLabel(ev)&&<p style={{fontSize:'11px',color:cat.color,margin:'2px 0 0'}}>{repLabel(ev)}</p>}
+                          </div>
+                          <button style={e.iconBtn} onClick={()=>editar(ev)}>✏️</button>
+                          <button style={e.iconBtn} onClick={()=>eliminar(ev.id)}>✕</button>
+                        </div>
+                      );
+                    })
+                }
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* LISTA */}
+        {vista==='lista' && (<>
+          <div style={{display:'flex',gap:'6px',marginBottom:'14px',flexWrap:'wrap'}}>
+            <button style={{...e.filterBtn,background:filtro==='todos'?'linear-gradient(135deg,#3A2A10,#C4973A)':'transparent',color:filtro==='todos'?'white':D.text2,border:filtro==='todos'?'none':`1px solid ${D.border}`}} onClick={()=>setFiltro('todos')}>Todos</button>
+            {CATEGORIAS.map(cat=>(
+              <button key={cat.id} style={{...e.filterBtn,background:filtro===cat.id?cat.color+'33':'transparent',color:filtro===cat.id?cat.color:D.text2,borderColor:filtro===cat.id?cat.color:D.border}} onClick={()=>setFiltro(cat.id)}>{cat.ico}</button>
             ))}
           </div>
-
-          {pestana==='hoy' && (
-            <div style={e.consejosBox}>
-              <p style={e.consejosTitle}>Actividades ideales para hoy</p>
-              {resultado.fase.negocio.map((c,i)=>(
-                <div key={i} style={e.consejoItem}>
-                  <div style={{ ...e.consejoIcono, backgroundColor:resultado.fase.colorSuave }}><span style={{fontSize:'20px'}}>{c.split(' ')[0]}</span></div>
-                  <span style={e.consejoTexto}>{c.split(' ').slice(1).join(' ')}</span>
-                </div>
-              ))}
-              <div style={{ ...e.evitarBox, borderColor:resultado.fase.colorTexto, backgroundColor:resultado.fase.colorSuave }}>
-                <p style={{ ...e.evitarTexto, color:resultado.fase.colorTexto }}>⚠️ {resultado.fase.evitar}</p>
-              </div>
-            </div>
-          )}
-
-          {pestana==='bienestar' && (
-            <div style={e.consejosBox}>
-              <p style={e.consejosTitle}>Cuídate hoy así 🌸</p>
-              {resultado.fase.bienestar.map((c,i)=>(
-                <div key={i} style={e.consejoItem}>
-                  <div style={{ ...e.consejoIcono, backgroundColor:resultado.fase.colorSuave }}><span style={{fontSize:'20px'}}>{c.split(' ')[0]}</span></div>
-                  <span style={e.consejoTexto}>{c.split(' ').slice(1).join(' ')}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {pestana==='ciclo' && (
-            <div style={e.consejosBox}>
-              <p style={e.consejosTitle}>Tu ciclo de {duracionCiclo} días</p>
-              {FASES.map(fase=>(
-                <div key={fase.id} style={{ ...e.cicloFila, background:resultado.fase.id===fase.id?fase.gradiente:'white', border:resultado.fase.id===fase.id?'none':'1px solid #EAE7E0' }}>
-                  <span style={{fontSize:'24px'}}>{fase.emoji}</span>
+          {eventosFiltrados.length===0&&<div style={e.empty}><p style={{fontSize:'40px',margin:'0 0 10px'}}>📅</p><p style={{color:D.text2}}>No hay eventos</p></div>}
+          {eventosFiltrados.map(ev=>{
+            const dias=diasRestantes(ev),cat=getCat(ev.categoria),et=etiqueta(dias);
+            return (
+              <div key={ev.id} style={{...e.card,borderLeft:`2px solid ${cat.color}`}}>
+                <div style={{display:'flex',gap:'12px',alignItems:'center',marginBottom:'10px'}}>
+                  <div style={{width:'42px',height:'42px',borderRadius:'12px',background:cat.color+'22',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'22px',flexShrink:0}}>{cat.ico}</div>
                   <div style={{flex:1}}>
-                    <p style={{ fontWeight:'bold', fontSize:'13px', margin:0, color:resultado.fase.id===fase.id?'white':fase.colorTexto }}>{fase.nombre}</p>
-                    <p style={{ fontSize:'11px', margin:'2px 0 0', color:resultado.fase.id===fase.id?'rgba(255,255,255,0.8)':'#8A8A8A' }}>Días {fase.diasDesde}–{fase.diasHasta}</p>
+                    <p style={{fontWeight:'bold',fontSize:'14px',margin:'0 0 2px',color:D.text}}>{ev.titulo}</p>
+                    <p style={{fontSize:'11px',color:D.text2,margin:0}}>{new Date(fechaEfectiva(ev)+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'long'})}{repLabel(ev)&&<span style={{color:cat.color}}> · {repLabel(ev)}</span>}</p>
+                    {ev.nota&&<p style={{fontSize:'11px',color:D.text2,margin:'2px 0 0'}}>{ev.nota}</p>}
                   </div>
-                  {resultado.fase.id===fase.id && <span style={e.hoyBadge}>HOY</span>}
+                  <span style={{fontSize:'12px',fontWeight:'bold',color:et.c,border:`1px solid ${et.c}55`,borderRadius:'20px',padding:'3px 10px',whiteSpace:'nowrap'}}>{et.t}</span>
+                </div>
+                <div style={{display:'flex',gap:'8px'}}>
+                  <button style={{...e.actionBtn,borderColor:D.dorado+'55',color:D.dorado}} onClick={()=>editar(ev)}>Editar</button>
+                  <button style={{...e.actionBtn,borderColor:D.rojo+'55',color:D.rojo}} onClick={()=>eliminar(ev.id)}>Borrar</button>
+                </div>
+              </div>
+            );
+          })}
+        </>)}
+
+        {/* AGREGAR */}
+        {vista==='agregar' && (<>
+          {!mostrarForm && (<>
+            <button style={e.btn} onClick={()=>setMostrarForm(true)}>+ Agregar evento</button>
+            <div style={e.card}>
+              <p style={e.sectionTitle}>Agrega rapido</p>
+              {CATEGORIAS.filter(cat=>SUGERIDOS.some(s=>s.categoria===cat.id)).map(cat=>(
+                <div key={cat.id} style={{marginBottom:'14px'}}>
+                  <p style={{fontSize:'12px',fontWeight:'bold',margin:'0 0 8px',color:cat.color}}>{cat.ico} {cat.label}</p>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:'6px'}}>
+                    {SUGERIDOS.filter(s=>s.categoria===cat.id).map((s,i)=>(
+                      <button key={i} style={{padding:'7px 14px',borderRadius:'20px',border:`1px solid ${cat.color}44`,background:'transparent',cursor:'pointer',fontSize:'12px',color:cat.color}} onClick={()=>usarSugerido(s)}>{s.titulo}</button>
+                    ))}
+                  </div>
                 </div>
               ))}
-              <button style={e.botonReconf} onClick={()=>setConfigurado(false)}>🔄 Actualizar mi fecha</button>
+            </div>
+          </>)}
+
+          {mostrarForm && (
+            <div style={e.card}>
+              <p style={e.sectionTitle}>{editandoId?'Editar evento':'Nuevo evento'}</p>
+              <input style={e.input} placeholder="Nombre del evento" value={titulo} onChange={ev=>setTitulo(ev.target.value)}/>
+              <label style={e.label}>Categoria</label>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px',margin:'8px 0 14px'}}>
+                {CATEGORIAS.map(cat=>(
+                  <button key={cat.id} style={{padding:'10px',borderRadius:'12px',border:`1px solid ${categoria===cat.id?cat.color:D.border}`,background:categoria===cat.id?cat.color+'22':'transparent',color:categoria===cat.id?cat.color:D.text2,cursor:'pointer',fontSize:'12px',textAlign:'left'}} onClick={()=>setCategoria(cat.id)}>{cat.ico} {cat.label}</button>
+                ))}
+              </div>
+              <label style={e.label}>Fecha</label>
+              <input style={e.input} type="date" value={fecha} onChange={ev=>setFecha(ev.target.value)}/>
+              <input style={e.input} placeholder="Nota opcional" value={nota} onChange={ev=>setNota(ev.target.value)}/>
+              <label style={e.label}>Repeticion</label>
+              <div style={{display:'flex',gap:'8px',margin:'8px 0 16px'}}>
+                {[['ninguna','Sin repetir'],['mensual','Cada mes'],['anual','Cada año']].map(([v,l])=>(
+                  <button key={v} style={{flex:1,padding:'10px',borderRadius:'12px',border:`1px solid ${repeticion===v?D.verde:D.border}`,background:repeticion===v?D.verdeD:'transparent',color:repeticion===v?D.verde:D.text2,cursor:'pointer',fontSize:'12px',fontWeight:repeticion===v?'bold':'normal'}} onClick={()=>setRepeticion(v)}>{l}</button>
+                ))}
+              </div>
+              <div style={{display:'flex',gap:'10px'}}>
+                <button style={e.btnSec} onClick={reset}>Cancelar</button>
+                <button style={e.btn} onClick={guardar}>{editandoId?'Guardar cambios':'Agregar'}</button>
+              </div>
             </div>
           )}
         </>)}
@@ -126,44 +292,27 @@ function Ciclo({ onVolver }) {
 }
 
 const e = {
-  contenedor:{ backgroundColor:'#FFFFFF', minHeight:'100vh', fontFamily:'Arial,sans-serif' },
-  topBar:{ padding:'20px 20px 24px', display:'flex', alignItems:'center', gap:'12px' },
-  volver:{ background:'rgba(255,255,255,0.25)', border:'none', color:'white', padding:'8px 14px', borderRadius:'20px', cursor:'pointer', fontSize:'13px' },
-  titulo:{ color:'white', fontSize:'20px', margin:0, fontWeight:'normal', letterSpacing:'1px' },
-  configBox:{ background:'white', borderRadius:'20px', padding:'20px', boxShadow:'0 4px 20px rgba(0,0,0,0.08)', border:'1px solid #EAE7E0' },
-  configHeader:{ display:'flex', gap:'14px', alignItems:'center', marginBottom:'20px' },
-  configTitulo:{ fontWeight:'bold', color:'#2D2D2D', fontSize:'16px', margin:0 },
-  configSub:{ color:'#8A8A8A', fontSize:'13px', margin:'4px 0 0' },
-  label:{ fontSize:'13px', color:'#8A8A8A', marginBottom:'6px', display:'block' },
-  input:{ width:'100%', padding:'12px 14px', borderRadius:'12px', border:'1.5px solid #EAE7E0', fontSize:'14px', marginBottom:'14px', boxSizing:'border-box', backgroundColor:'#FAF9F7' },
-  duracionFila:{ display:'flex', flexWrap:'wrap', gap:'8px', marginBottom:'8px' },
-  durBtn:{ padding:'8px 14px', borderRadius:'10px', border:'1.5px solid', cursor:'pointer', fontSize:'14px', fontWeight:'bold' },
-  hint:{ fontSize:'12px', color:'#B0A898', marginBottom:'16px' },
-  botonGuardar:{ width:'100%', padding:'14px', borderRadius:'14px', border:'none', background:'linear-gradient(135deg,#7A5C8A,#B48EC4)', color:'white', cursor:'pointer', fontSize:'16px', fontWeight:'bold' },
-  faseTarjeta:{ borderRadius:'24px', padding:'24px', marginBottom:'16px', boxShadow:'0 8px 24px rgba(0,0,0,0.15)' },
-  faseTop:{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'12px' },
-  faseSubtitulo:{ color:'rgba(255,255,255,0.75)', fontSize:'12px', letterSpacing:'1px', textTransform:'uppercase', margin:'0 0 4px' },
-  faseNombre:{ color:'white', fontWeight:'bold', fontSize:'22px', margin:'0 0 4px' },
-  faseEnergia:{ color:'rgba(255,255,255,0.85)', fontSize:'13px', margin:0 },
-  faseMetas:{ display:'flex', gap:'8px' },
-  faseMeta:{ backgroundColor:'rgba(255,255,255,0.2)', borderRadius:'12px', padding:'10px 14px', textAlign:'center' },
-  faseMetaNum:{ color:'white', fontWeight:'bold', fontSize:'20px', margin:0, lineHeight:1 },
-  faseMetaLabel:{ color:'rgba(255,255,255,0.8)', fontSize:'11px', margin:'3px 0 0' },
-  faseDescripcion:{ color:'rgba(255,255,255,0.9)', fontSize:'14px', lineHeight:1.6, marginBottom:'14px' },
-  proximaFaseBox:{ backgroundColor:'rgba(255,255,255,0.2)', borderRadius:'10px', padding:'10px 14px' },
-  proximaFaseTexto:{ color:'white', fontSize:'13px', margin:0 },
-  pestanas:{ display:'flex', gap:'8px', marginBottom:'16px' },
-  pestana:{ flex:1, padding:'10px', borderRadius:'12px', border:'1.5px solid #EAE7E0', background:'white', cursor:'pointer', fontSize:'12px', textAlign:'center', color:'#8A8A8A' },
-  consejosBox:{ background:'white', borderRadius:'20px', padding:'18px', boxShadow:'0 4px 16px rgba(0,0,0,0.07)', border:'1px solid #EAE7E0' },
-  consejosTitle:{ fontWeight:'bold', color:'#2D2D2D', fontSize:'14px', marginBottom:'14px' },
-  consejoItem:{ display:'flex', gap:'12px', alignItems:'center', padding:'10px 0', borderBottom:'1px solid #FAF9F7' },
-  consejoIcono:{ width:'40px', height:'40px', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 },
-  consejoTexto:{ fontSize:'14px', color:'#444', flex:1 },
-  evitarBox:{ marginTop:'14px', borderRadius:'12px', padding:'12px', border:'1px solid' },
-  evitarTexto:{ fontSize:'13px', fontWeight:'bold', margin:0 },
-  cicloFila:{ display:'flex', alignItems:'center', gap:'12px', padding:'14px', borderRadius:'14px', marginBottom:'8px' },
-  hoyBadge:{ color:'white', fontSize:'11px', fontWeight:'bold', backgroundColor:'rgba(255,255,255,0.3)', padding:'3px 10px', borderRadius:'20px' },
-  botonReconf:{ width:'100%', marginTop:'14px', padding:'10px', borderRadius:'12px', border:'1.5px solid #EAE7E0', background:'white', cursor:'pointer', fontSize:'13px', color:'#8A8A8A' },
+  page:{backgroundColor:D.bg,minHeight:'100vh',fontFamily:'Arial,sans-serif'},
+  header:{background:'linear-gradient(135deg,#3A2A10,#C4973A)',padding:'52px 20px 24px',display:'flex',alignItems:'center',gap:'14px'},
+  back:{background:'rgba(255,255,255,0.12)',border:'none',color:'white',width:'36px',height:'36px',borderRadius:'50%',cursor:'pointer',fontSize:'16px',flexShrink:0},
+  headerSub:{color:'rgba(255,255,255,0.6)',fontSize:'11px',margin:0,letterSpacing:'1px',textTransform:'uppercase'},
+  headerTitle:{color:'white',fontSize:'22px',margin:0,fontWeight:'bold'},
+  headerEmoji:{fontSize:'36px',marginLeft:'auto'},
+  body:{padding:'16px'},
+  card:{background:D.card,borderRadius:'20px',padding:'18px',marginBottom:'12px',border:`1px solid ${D.border}`},
+  sectionTitle:{color:D.text,fontWeight:'bold',fontSize:'14px',margin:'0 0 14px'},
+  tabs:{display:'flex',gap:'8px',marginBottom:'14px'},
+  tab:{flex:1,padding:'10px',borderRadius:'12px',cursor:'pointer',fontSize:'13px',textAlign:'center'},
+  navBtn:{background:D.card2,border:`1px solid ${D.border}`,color:D.dorado,padding:'8px 16px',borderRadius:'10px',cursor:'pointer',fontSize:'18px'},
+  filterBtn:{padding:'8px 12px',borderRadius:'20px',cursor:'pointer',fontSize:'13px',border:'1px solid'},
+  alertItem:{display:'flex',alignItems:'center',gap:'10px',padding:'6px 0'},
+  label:{color:D.text2,fontSize:'12px',display:'block',marginTop:'10px',marginBottom:'4px'},
+  input:{width:'100%',padding:'13px 16px',borderRadius:'14px',border:`1px solid ${D.border}`,fontSize:'14px',marginTop:'4px',boxSizing:'border-box',backgroundColor:D.card2,color:D.text},
+  btn:{width:'100%',padding:'14px',background:'linear-gradient(135deg,#3A2A10,#C4973A)',color:'white',border:'none',borderRadius:'14px',fontSize:'15px',cursor:'pointer',fontWeight:'bold',marginBottom:'12px'},
+  btnSec:{flex:1,padding:'13px',borderRadius:'14px',border:`1px solid ${D.border}`,background:'transparent',color:D.text2,cursor:'pointer',fontSize:'14px'},
+  empty:{textAlign:'center',padding:'40px 20px'},
+  actionBtn:{flex:1,padding:'9px',borderRadius:'10px',border:'1px solid',background:'transparent',cursor:'pointer',fontSize:'12px',fontWeight:'bold'},
+  iconBtn:{background:'none',border:'none',cursor:'pointer',color:D.text2,fontSize:'14px',padding:'4px 8px'},
 };
 
-export default Ciclo;
+export default Calendario;
