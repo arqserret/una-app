@@ -1,82 +1,89 @@
 import React, { useState, useEffect } from 'react';
 
-const D = { bg:'#0D1117', card:'#161B22', card2:'#1C2333', border:'rgba(255,255,255,0.08)', text:'#E6EDF3', text2:'rgba(255,255,255,0.5)', verde:'#4AA08A', verdeD:'#1A3D35', malva:'#C4A0D4', malvaD:'#2E1F3E', dorado:'#E8BF6A', doradoD:'#3A2A10', rojo:'#F47067' };
+const BG='#0D1117', CARD='#161B22', CARD2='#1C2333', BR='rgba(255,255,255,0.08)', TXT='#E6EDF3', TXT2='rgba(255,255,255,0.4)', VE='#4AA08A', VED='#0A1F15', YE='#E8BF6A', YED='#1A1208', RE='#F47067';
 
 function Finanzas({ onVolver }) {
-  const [movimientos, setMovimientos] = useState(() => { const g=localStorage.getItem('una_movimientos'); return g?JSON.parse(g):[]; });
+  const [movs, setMovs] = useState(() => { try { return JSON.parse(localStorage.getItem('una_movimientos'))||[]; } catch { return []; } });
   const [tipo, setTipo] = useState('negocio');
-  const [categoria, setCategoria] = useState('ingreso');
-  const [descripcion, setDescripcion] = useState('');
+  const [cat, setCat] = useState('ingreso');
+  const [desc, setDesc] = useState('');
   const [monto, setMonto] = useState('');
 
-  useEffect(() => { localStorage.setItem('una_movimientos', JSON.stringify(movimientos)); }, [movimientos]);
+  useEffect(() => { localStorage.setItem('una_movimientos', JSON.stringify(movs)); }, [movs]);
 
   const agregar = () => {
-    if(!descripcion||!monto) return;
-    setMovimientos([{id:Date.now(),tipo,categoria,descripcion,monto:parseFloat(monto),fecha:new Date().toLocaleDateString('es-MX')},...movimientos]);
-    setDescripcion(''); setMonto('');
+    if (!desc || !monto) return;
+    setMovs([{ id:Date.now(), tipo, cat, desc, monto:parseFloat(monto), fecha:new Date().toLocaleDateString('es-MX') }, ...movs]);
+    setDesc(''); setMonto('');
   };
-  const eliminar = (id) => setMovimientos(movimientos.filter(m=>m.id!==id));
-  const total = (t,c) => movimientos.filter(m=>m.tipo===t&&m.categoria===c).reduce((a,m)=>a+m.monto,0);
-  const tNI=total('negocio','ingreso'),tNG=total('negocio','gasto'),tHI=total('hogar','ingreso'),tHG=total('hogar','gasto');
+
+  const total = (t,c) => movs.filter(m=>m.tipo===t&&m.cat===c).reduce((a,m)=>a+m.monto, 0);
+  const NI=total('negocio','ingreso'), NG=total('negocio','gasto'), HI=total('hogar','ingreso'), HG=total('hogar','gasto');
+
+  const pill = (activo, colorBg, colorTxt, colorBorder) => ({
+    flex:1, padding:'12px 8px', borderRadius:14, border:`1px solid ${activo?colorBorder:BR}`,
+    background: activo?colorBg:'transparent', cursor:'pointer', fontSize:14,
+    color: activo?colorTxt:TXT2, fontWeight: activo?'bold':'normal',
+  });
 
   return (
-    <div style={e.page}>
-      <div style={e.header}>
-        <button style={e.back} onClick={onVolver}>←</button>
-        <div>
-          <p style={e.headerSub}>Módulo</p>
-          <h2 style={e.headerTitle}>Mis Finanzas</h2>
+    <div style={{ background:BG, minHeight:'100vh', fontFamily:'Arial,sans-serif' }}>
+      {/* Header */}
+      <div style={{ background:'linear-gradient(135deg,#0A1F15,#163028)', padding:'52px 20px 28px', display:'flex', alignItems:'center', gap:14 }}>
+        <button style={{ background:'rgba(255,255,255,0.08)', border:'none', color:'white', width:40, height:40, borderRadius:'50%', cursor:'pointer', fontSize:18, flexShrink:0 }} onClick={onVolver}>←</button>
+        <div style={{flex:1}}>
+          <p style={{ color:'rgba(255,255,255,0.35)', fontSize:10, margin:0, letterSpacing:2 }}>MODULO</p>
+          <h2 style={{ color:'white', fontSize:24, margin:0, fontWeight:'bold' }}>Mis Finanzas</h2>
         </div>
-        <span style={e.headerEmoji}>💰</span>
+        <span style={{fontSize:42}}>💰</span>
       </div>
 
-      <div style={e.body}>
+      <div style={{ padding:16 }}>
         {/* Resumen */}
-        <div style={e.row}>
-          {[{label:'Negocio',color:D.verde,colorD:D.verdeD,i:tNI,g:tNG},{label:'Hogar',color:D.dorado,colorD:D.doradoD,i:tHI,g:tHG}].map(t=>(
-            <div key={t.label} style={{...e.card,flex:1,borderTop:`2px solid ${t.color}`}}>
-              <p style={e.cardLabel}>{t.label}</p>
-              <p style={{...e.cardNum,color:D.verde}}>+${t.i.toLocaleString('es-MX')}</p>
-              <p style={{...e.cardNum,color:D.rojo}}>-${t.g.toLocaleString('es-MX')}</p>
-              <div style={e.divider}/>
-              <p style={e.neto}>Neto <strong style={{color:t.i-t.g>=0?D.verde:D.rojo}}>${(t.i-t.g).toLocaleString('es-MX')}</strong></p>
+        <div style={{ display:'flex', gap:12, marginBottom:14 }}>
+          {[{l:'Negocio',c:VE,cd:VED,i:NI,g:NG},{l:'Hogar',c:YE,cd:YED,i:HI,g:HG}].map(t => (
+            <div key={t.l} style={{ flex:1, background:CARD, borderRadius:22, padding:20, border:`1px solid ${BR}`, borderTop:`2px solid ${t.c}` }}>
+              <p style={{ color:t.c, fontWeight:'bold', fontSize:12, margin:'0 0 12px', letterSpacing:1 }}>{t.l.toUpperCase()}</p>
+              <p style={{ color:VE, fontWeight:'bold', fontSize:20, margin:'0 0 4px' }}>+${t.i.toLocaleString('es-MX')}</p>
+              <p style={{ color:RE, fontWeight:'bold', fontSize:20, margin:'0 0 12px' }}>-${t.g.toLocaleString('es-MX')}</p>
+              <div style={{ height:1, background:BR, margin:'0 0 10px' }}/>
+              <p style={{ color:TXT2, fontSize:12, margin:0 }}>Neto <strong style={{ color:t.i-t.g>=0?VE:RE }}>${(t.i-t.g).toLocaleString('es-MX')}</strong></p>
             </div>
           ))}
         </div>
 
         {/* Formulario */}
-        <div style={e.card}>
-          <p style={e.cardTitle}>Registrar movimiento</p>
-          <div style={e.row}>
-            <button style={tipo==='negocio'?{...e.pill,backgroundColor:D.verdeD,color:D.verde,borderColor:D.verde}:e.pill} onClick={()=>setTipo('negocio')}>Negocio</button>
-            <button style={tipo==='hogar'?{...e.pill,backgroundColor:D.doradoD,color:D.dorado,borderColor:D.dorado}:e.pill} onClick={()=>setTipo('hogar')}>Hogar</button>
+        <div style={{ background:CARD, borderRadius:22, padding:20, marginBottom:14, border:`1px solid ${BR}` }}>
+          <p style={{ color:TXT, fontWeight:'bold', fontSize:15, margin:'0 0 16px' }}>Registrar movimiento</p>
+          <div style={{ display:'flex', gap:10, marginBottom:10 }}>
+            <button style={pill(tipo==='negocio',VED,VE,VE)} onClick={()=>setTipo('negocio')}>Negocio</button>
+            <button style={pill(tipo==='hogar',YED,YE,YE)} onClick={()=>setTipo('hogar')}>Hogar</button>
           </div>
-          <div style={{...e.row,marginTop:'8px'}}>
-            <button style={categoria==='ingreso'?{...e.pill,backgroundColor:D.verdeD,color:D.verde,borderColor:D.verde}:e.pill} onClick={()=>setCategoria('ingreso')}>+ Ingreso</button>
-            <button style={categoria==='gasto'?{...e.pill,backgroundColor:'#2A1010',color:D.rojo,borderColor:D.rojo}:e.pill} onClick={()=>setCategoria('gasto')}>− Gasto</button>
+          <div style={{ display:'flex', gap:10, marginBottom:10 }}>
+            <button style={pill(cat==='ingreso',VED,VE,VE)} onClick={()=>setCat('ingreso')}>+ Ingreso</button>
+            <button style={pill(cat==='gasto','#2A1010',RE,RE)} onClick={()=>setCat('gasto')}>- Gasto</button>
           </div>
-          <input style={e.input} placeholder="¿Qué fue?" value={descripcion} onChange={ev=>setDescripcion(ev.target.value)}/>
-          <input style={e.input} placeholder="Monto en pesos" type="number" value={monto} onChange={ev=>setMonto(ev.target.value)}/>
-          <button style={e.btn} onClick={agregar}>Agregar movimiento</button>
+          <input style={{ width:'100%', padding:'14px 16px', borderRadius:16, border:`1px solid ${BR}`, fontSize:14, marginBottom:10, boxSizing:'border-box', background:CARD2, color:TXT }} placeholder="Que fue? (ej: Venta de tamales)" value={desc} onChange={e=>setDesc(e.target.value)} />
+          <input style={{ width:'100%', padding:'14px 16px', borderRadius:16, border:`1px solid ${BR}`, fontSize:14, marginBottom:12, boxSizing:'border-box', background:CARD2, color:TXT }} placeholder="Monto en pesos" type="number" value={monto} onChange={e=>setMonto(e.target.value)} />
+          <button style={{ width:'100%', padding:15, background:'linear-gradient(135deg,#0A1F15,#4AA08A)', color:'white', border:'none', borderRadius:16, fontSize:15, cursor:'pointer', fontWeight:'bold' }} onClick={agregar}>Agregar movimiento</button>
         </div>
 
-        {/* Listas */}
-        {[{key:'negocio',label:'Negocio',color:D.verde},{key:'hogar',label:'Hogar',color:D.dorado}].map(col=>(
-          <div key={col.key} style={{...e.card,borderLeft:`2px solid ${col.color}`}}>
-            <p style={{...e.cardTitle,color:col.color}}>{col.label}</p>
-            {movimientos.filter(m=>m.tipo===col.key).length===0
-              ? <p style={e.empty}>Sin movimientos aún</p>
-              : movimientos.filter(m=>m.tipo===col.key).map(m=>(
-                <div key={m.id} style={e.item}>
-                  <div style={{flex:1}}>
-                    <p style={e.itemTitle}>{m.descripcion}</p>
-                    <p style={e.itemSub}>{m.fecha}</p>
+        {/* Listas por categoria */}
+        {[{k:'negocio',l:'Negocio',c:VE},{k:'hogar',l:'Hogar',c:YE}].map(col => (
+          <div key={col.k} style={{ background:CARD, borderRadius:22, padding:20, marginBottom:14, border:`1px solid ${BR}`, borderLeft:`2px solid ${col.c}` }}>
+            <p style={{ color:col.c, fontWeight:'bold', fontSize:14, margin:'0 0 14px' }}>{col.l}</p>
+            {movs.filter(m=>m.tipo===col.k).length===0
+              ? <p style={{ color:TXT2, fontSize:13, textAlign:'center', padding:'12px 0', margin:0 }}>Sin movimientos aun</p>
+              : movs.filter(m=>m.tipo===col.k).map(m => (
+                  <div key={m.id} style={{ display:'flex', gap:12, alignItems:'center', padding:'12px 0', borderBottom:`1px solid ${BR}` }}>
+                    <div style={{flex:1}}>
+                      <p style={{ color:TXT, fontSize:14, margin:'0 0 2px', fontWeight:'bold' }}>{m.desc}</p>
+                      <p style={{ color:TXT2, fontSize:11, margin:0 }}>{m.fecha}</p>
+                    </div>
+                    <p style={{ color:m.cat==='ingreso'?VE:RE, fontWeight:'bold', fontSize:17, margin:0 }}>{m.cat==='ingreso'?'+':'-'}${m.monto.toLocaleString('es-MX')}</p>
+                    <button style={{ background:'none', border:'none', cursor:'pointer', color:TXT2, fontSize:16, padding:'4px 8px' }} onClick={()=>setMovs(movs.filter(x=>x.id!==m.id))}>✕</button>
                   </div>
-                  <p style={{...e.itemMonto,color:m.categoria==='ingreso'?D.verde:D.rojo}}>{m.categoria==='ingreso'?'+':'-'}${m.monto.toLocaleString('es-MX')}</p>
-                  <button style={e.del} onClick={()=>eliminar(m.id)}>✕</button>
-                </div>
-              ))
+                ))
             }
           </div>
         ))}
@@ -84,31 +91,5 @@ function Finanzas({ onVolver }) {
     </div>
   );
 }
-
-const e = {
-  page:{backgroundColor:D.bg,minHeight:'100vh',fontFamily:'Arial,sans-serif'},
-  header:{background:'linear-gradient(135deg,#1A3D35,#2D6E5E)',padding:'52px 20px 24px',display:'flex',alignItems:'center',gap:'14px'},
-  back:{background:'rgba(255,255,255,0.12)',border:'none',color:'white',width:'36px',height:'36px',borderRadius:'50%',cursor:'pointer',fontSize:'16px',flexShrink:0},
-  headerSub:{color:'rgba(255,255,255,0.6)',fontSize:'11px',margin:0,letterSpacing:'1px',textTransform:'uppercase'},
-  headerTitle:{color:'white',fontSize:'22px',margin:0,fontWeight:'bold'},
-  headerEmoji:{fontSize:'36px',marginLeft:'auto'},
-  body:{padding:'16px'},
-  row:{display:'flex',gap:'12px'},
-  card:{background:D.card,borderRadius:'20px',padding:'18px',marginBottom:'12px',border:`1px solid ${D.border}`},
-  cardLabel:{color:D.text2,fontSize:'12px',margin:'0 0 6px',textTransform:'uppercase',letterSpacing:'0.5px'},
-  cardNum:{fontWeight:'bold',fontSize:'16px',margin:'2px 0'},
-  divider:{height:'1px',backgroundColor:D.border,margin:'10px 0'},
-  neto:{fontSize:'12px',color:D.text2,margin:0},
-  cardTitle:{color:D.text,fontWeight:'bold',fontSize:'14px',margin:'0 0 14px'},
-  pill:{flex:1,padding:'10px',borderRadius:'12px',border:`1px solid ${D.border}`,background:'transparent',cursor:'pointer',fontSize:'13px',color:D.text2},
-  input:{width:'100%',padding:'13px 16px',borderRadius:'14px',border:`1px solid ${D.border}`,fontSize:'14px',marginTop:'10px',boxSizing:'border-box',backgroundColor:D.card2,color:D.text},
-  btn:{width:'100%',padding:'14px',background:'linear-gradient(135deg,#2D6E5E,#4AA08A)',color:'white',border:'none',borderRadius:'14px',fontSize:'15px',cursor:'pointer',fontWeight:'bold',marginTop:'12px'},
-  item:{display:'flex',gap:'10px',alignItems:'center',padding:'10px 0',borderBottom:`1px solid ${D.border}`},
-  itemTitle:{fontSize:'14px',color:D.text,margin:0},
-  itemSub:{fontSize:'11px',color:D.text2,margin:'2px 0 0'},
-  itemMonto:{fontWeight:'bold',fontSize:'15px',margin:0,whiteSpace:'nowrap'},
-  del:{background:'none',border:'none',cursor:'pointer',color:D.text2,fontSize:'14px',padding:'4px'},
-  empty:{color:D.text2,fontSize:'13px',textAlign:'center',padding:'12px 0',margin:0},
-};
 
 export default Finanzas;
